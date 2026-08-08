@@ -118,8 +118,17 @@ that each is an independent arm on the crystal.
 
 ## Phase 5 — Product B: original IP
 
-Gated on 3.1–3.5. Not startable before the pack abstraction is real.
-
+- [x] **5.0 Derivation script.** `tools/make_ip_build.sh` generates Product B
+  from this engine: strips every hard IP category, installs `packs/<name>/`
+  from the ROM-free dataset, rebrands, auto-quarantines the suites that depend
+  on stripped Kanto content, and runs the IP gate. Derived rather than copied,
+  so it cannot drift from the engine. Output verified: boots on
+  `packs/starter` with roster `FIXMON_A/B/C` and no Gen 1 species, engine and
+  modkit tiers both green, hard gate clean, 975 soft references tracked.
+  *Verify:* `tools/make_ip_build.sh /tmp/ipbuild`
+- [ ] **5.0b Publish it.** Blocked: the GitHub App is scoped to this repository
+  only and returned 403 on repo creation. Create `original-ip-engine` by hand,
+  then run the publish commands the script prints.
 - [ ] **5.1 Decide the game.** Name, setting, creature system, art direction.
   This is a design decision, not an engineering one, and it blocks everything
   else in this phase.
