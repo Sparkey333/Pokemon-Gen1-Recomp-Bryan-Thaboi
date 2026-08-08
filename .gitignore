@@ -17,6 +17,9 @@ __pycache__/
 !.github/
 !.gitignore
 !.luacheckrc
+# fork-local: the /recomp and /gitkit skills are part of the deliverable and
+# have to travel with the branch (see docs/DIVERGENCE.md)
+!.claude/
 
 # Android build outputs / local SDK path / packaged payload (keep love-android sources)
 mobile/android/app/build/

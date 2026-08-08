@@ -1,5 +1,29 @@
 # Gen1Recomp
 
+> ### This is a fork
+>
+> **Upstream: [bryanthaboi/gen1recomp](https://github.com/bryanthaboi/gen1recomp)** — all
+> credit for this engine belongs there. This repository tracks upstream's `dev`
+> branch with full history, so `git merge upstream/dev` keeps working; it is not
+> a snapshot.
+>
+> Licensed MIT by BOIS CLUB GAMES, LLC. That notice is retained verbatim in
+> `LICENSE.MD` and must never be edited.
+>
+> **This fork is not affiliated with or endorsed by the upstream project.**
+> Report bugs you find *here* to this repository, not to upstream, unless you
+> have reproduced them on a clean upstream checkout.
+>
+> Fork-specific documentation:
+> - [`docs/ROADMAP.md`](docs/ROADMAP.md) — ordered increments and their verify commands
+> - [`docs/DIVERGENCE.md`](docs/DIVERGENCE.md) — every deviation from upstream and its merge rule
+> - [`docs/IP-FIREWALL.md`](docs/IP-FIREWALL.md) — what may be sold and what may not
+> - `.claude/skills/recomp`, `.claude/skills/gitkit` — the working method
+>
+> Like upstream, this repository contains **no ROM and no extracted game data**.
+> A legally obtained cartridge dump is the only game-content input, and it never
+> leaves the player's machine.
+
 A native LÖVE2D recreation of Poke Red, Blue and Yellow. The engine and map
 behavior are hand-written Lua; game data and graphics are decoded from a ROM
 supplied by the player.
