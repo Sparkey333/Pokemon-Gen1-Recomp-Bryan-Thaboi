@@ -293,8 +293,10 @@ eq(Check.parseSums(nil, "anything"), nil, "parseSums(nil, target) returns nil wi
 -- Check.releaseUrl  (the fixed public landing page)
 -- ---------------------------------------------------------------------------
 
+-- Derived from the configured slug, not pinned to a literal -- see the note
+-- in tests/engine/update_check_tests.lua.
 eq(Check.releaseUrl(),
-   "https://github.com/bryanthaboi/gen1recomp/releases/latest",
-   "releaseUrl points at the repo's latest release")
+   "https://github.com/" .. Check.REPO .. "/releases/latest",
+   "releaseUrl points at the configured repo's latest release")
 
 T.finish("update")

@@ -11,10 +11,15 @@ local check, eq = T.check, T.eq
 local Check = require("src.update.Check")
 local Json = require("src.link.Json")
 
--- releaseUrl is the fixed public landing page the UI links on needs_full
+-- releaseUrl is the fixed public landing page the UI links on needs_full.
+-- Asserted against the configured slug rather than a literal: pinning the
+-- literal here made a legitimate fork retarget look like a regression, while
+-- testing nothing the derivation does not already guarantee.  What matters is
+-- that the link follows src/update/Repo.lua -- see the guard in
+-- tests/engine/update_repo_slug_test.lua for the shipped-consistency check.
 eq(Check.releaseUrl(),
-   "https://github.com/bryanthaboi/gen1recomp/releases/latest",
-   "releaseUrl points at the repo's latest release")
+   "https://github.com/" .. Check.REPO .. "/releases/latest",
+   "releaseUrl points at the configured repo's latest release")
 
 -- parseRelease: a well-formed release with the .love payload and its sums
 local body = Json.encode({

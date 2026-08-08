@@ -7,8 +7,10 @@
 
 local SwitchOta = {}
 
-SwitchOta.RELEASES_API =
-  "https://api.github.com/repos/bryanthaboi/gen1recomp/releases/latest"
+-- Single source of truth (src/update/Repo.lua).  Kept require-free-safe: this
+-- module is documented as host-testable with no love.*, and Repo.lua is pure
+-- Lua too, so a plain-Lua test can still load both.
+SwitchOta.RELEASES_API = require("src.update.Repo").releasesApi()
 SwitchOta.OTA_ASSET_PATTERN = "^gen1recomp%-(%d+%.%d+%.%d+)%-switch%.zip$"
 SwitchOta.CHECK_TIMEOUT_SEC = 6
 SwitchOta.GAME_NRO_NAME = "gen1recomp-game.nro"

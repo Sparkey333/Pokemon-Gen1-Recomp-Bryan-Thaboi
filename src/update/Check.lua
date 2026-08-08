@@ -19,7 +19,9 @@
 local Check = {}
 local Platform = require("src.core.Platform")
 
-Check.REPO = "bryanthaboi/gen1recomp"
+-- Single source of truth (src/update/Repo.lua); kept as Check.REPO so the
+-- existing readers and tests do not have to change.
+Check.REPO = require("src.update.Repo").SLUG
 
 local CMD = "update_check_cmd"
 local STATE = "update_check_state"

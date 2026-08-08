@@ -51,7 +51,17 @@ local osName    = (love.system and love.system.getOS and love.system.getOS()) or
 local isWindows = osName == "Windows"
 local saveDir   = love.filesystem.getSaveDirectory()
 
-local API_URL = "https://api.github.com/repos/bryanthaboi/gen1recomp/releases/latest"
+-- Single source of truth (src/update/Repo.lua), loaded the way this thread
+-- loads every sibling: the "src.*" package searcher does not exist here, so
+-- require would fail.  Degrading to a hardcoded slug on a load failure is
+-- exactly the bug this centralization exists to prevent -- a fork would
+-- silently resume pointing at upstream -- so a broken load is fatal instead.
+local API_URL
+do
+  local chunk = love.filesystem.load("src/update/Repo.lua")
+  assert(chunk, "src/update/Repo.lua missing: refusing to guess an update feed")
+  API_URL = chunk().releasesApi()
+end
 
 -- the release picked by the last "check"; kept between commands so "download"
 -- knows the payload url/size/name without re-fetching
