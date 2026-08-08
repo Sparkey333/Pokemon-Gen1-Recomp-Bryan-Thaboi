@@ -28,25 +28,39 @@ Status: `[x]` done · `[ ]` open · `[~]` partly done, remainder stated.
 Confirm every upstream capability before diverging. Nothing here changes
 behaviour; it establishes what "still works" means.
 
-- [ ] **1.1 Platform selftests.** Run the three offline build gates and record
-  results. *Verify:* `bash scripts/switch/selftest_build_switch.sh`,
-  `scripts/xbox-uwp/selftest_build_xbox_uwp.sh`,
-  `scripts/linux-arm64/selftest_build_linux_arm64.sh`
-- [ ] **1.2 Mod lint across every shipped mod.**
-  *Verify:* `for m in mods/*/; do python3 tools/modkit.py lint "${m%/}"; done`
-- [ ] **1.3 Desktop `.love` packaging.**
-  *Verify:* `scripts/pack_love.sh --output /tmp/g.love --version 0.0.0` then
-  confirm the archive lists `main.lua`.
+- [x] **1.1 Platform selftests.** All three offline gates pass on the fork, and
+  the full builds behind them pass too — verified on PR #1
+  ([run 31232061581](https://github.com/Sparkey333/Pokemon-Gen1-Recomp-Bryan-Thaboi/actions/runs/31232061581)),
+  not locally: CI has the runners this container does not.
+  | Job | Runner | Result |
+  | --- | --- | --- |
+  | Switch offline selftest | ubuntu-latest | success |
+  | Xbox UWP offline selftest | ubuntu-latest | success |
+  | Linux arm64 offline selftest | ubuntu-latest | success |
+  | Linux arm64 AppImage build | ubuntu-24.04-arm | success |
+  | Xbox UWP build | windows-2022 | success |
+  | iOS build | macos-latest | success (unsigned — the signing step is gated on the upstream repo) |
+  | Switch fused build | self-hosted macOS | skipped, correctly — gated on `github.repository` |
+- [x] **1.2 Mod lint across every shipped mod.** The `mod lint (no ROM-derived
+  content)` job passes on the fork, which is this check across every `mods/*/`
+  with a manifest.
+- [x] **1.3 Desktop `.love` packaging.** Exercised by the Xbox UWP selftest,
+  which builds the shared payload with `scripts/pack_love.sh` and uploads it.
 - [ ] **1.4 Fix `mods/examples` load warning.** Boot logs
   `mod mods/examples ignored: Could not open file mods/examples/manifest.json`.
   Either a real packaging bug or a directory that should not be scanned.
   *Verify:* boot log clean.
-- [ ] **1.5 Parity ledger.** One table: capability → verify command → verified
-  here / needs Mac / needs Windows / needs ROM. Record the unverifiable ones
-  rather than claiming them.
-- [ ] **1.6 CI green on the fork.** Confirm the `github.repository` gates skip
-  signing and self-hosted jobs cleanly and the `headless` job passes.
-  *Verify:* the Actions run on the first PR.
+- [~] **1.5 Parity ledger.** Largely answered by 1.1 above plus the local gate.
+  What is still genuinely unverified anywhere: the **T3 content tier** and
+  `tests/run_link_tests.lua`, both of which need a real ROM import, and
+  **code-signed** iOS/macOS artifacts, which need certificates on a Mac. Fold
+  those two rows into a single table when convenient.
+- [x] **1.6 CI green on the fork.** All 15 checks on PR #1 completed: 14
+  success, 1 skipped. The `github.repository` gates behave exactly as intended
+  on a fork — signing and the self-hosted Switch build switch themselves off,
+  and everything that does not need a secret still runs. `headless suites
+  (no ROM)` passes, so `scripts/test.sh` is green on a clean checkout as well
+  as locally.
 
 ## Phase 2 — Engine hardening
 
