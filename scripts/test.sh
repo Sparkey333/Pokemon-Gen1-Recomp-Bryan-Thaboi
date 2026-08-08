@@ -161,13 +161,19 @@ if [ "$SHOTS" = "1" ]; then
   mkdir -p "$SHOT_DIR"
   SHOT_DRIVER=tests/drivers/shots_fixture.lua
 
-  # The fixture goldens are not capturable yet.  A driver only ever runs
-  # after main.lua's bootGame(), so it cannot redirect Data:load(), and
-  # src/core/Data.lua has no POKEPORT_DATA_DIR branch -- 21-testing-and-ci
-  # §"Engine changes" specifies one, but it is not implemented, so a LOVE
-  # process has no way to boot tests/fixture_data.  On a ROM-less checkout
-  # main.lua does not even reach the game: RomImporter.isReady() is false
-  # and it opens the importer instead.
+  # The boot half of this tier now works.  src/core/Data.lua reads
+  # POKEPORT_DATA_DIR, and RomImporter.isReady() honours it as well, so
+  #
+  #   POKEPORT_DATA_DIR=tests/fixture_data POKEPORT_DRIVER=... love .
+  #
+  # boots the game on the ROM-free dataset and renders, instead of opening the
+  # ROM picker.  tests/engine/data_dir_boot_test.lua pins that.
+  #
+  # What is still missing is the DATASET.  tests/fixture_data is 3 species /
+  # 2 maps with no player sprite, so a driver gets the title screen and the
+  # start menu and then runs out of content -- not enough for the four goldens
+  # in tests/modkit/shots.lua (battle intro and mod screen are unreachable).
+  # Growing the fixture set to a playable slice is what remains.
   #
   # WITH_SHOTS is opt-in, so asking for a tier that cannot run is an error,
   # not a skip.  Reporting "pass" here is what made the whole pipeline look
@@ -175,8 +181,8 @@ if [ "$SHOTS" = "1" ]; then
   if [ ! -f "$SHOT_DRIVER" ]; then
     echo ""
     echo "-- T5 shots: NOT WIRED ($SHOT_DRIVER does not exist)."
-    echo "   Fixture capture needs the POKEPORT_DATA_DIR override in"
-    echo "   src/core/Data.lua so LOVE can boot tests/fixture_data."
+    echo "   The POKEPORT_DATA_DIR boot path works; what is missing is a"
+    echo "   fixture dataset complete enough to reach the four goldens."
     FAILED+=("T5 shots (requested but not wired)")
   elif ! command -v love >/dev/null 2>&1; then
     echo ""

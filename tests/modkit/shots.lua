@@ -32,11 +32,20 @@ end
 
 -- The fixture-dataset shot list, named here rather than in the workflow so
 -- adding a golden is a one-line change next to the driver that produces
--- it.  Nothing captures these yet: a POKEPORT_DRIVER chunk is loaded after
--- main.lua has already booted the game, and src/core/Data.lua has no
--- POKEPORT_DATA_DIR branch, so no LOVE process can be pointed at the
--- fixture dataset.  The list is the contract the driver will satisfy once
--- that override lands.
+-- it.
+--
+-- The override this list was waiting on now exists: src/core/Data.lua reads
+-- POKEPORT_DATA_DIR (loadModule), and RomImporter.isReady() honours it too,
+-- so `POKEPORT_DATA_DIR=tests/fixture_data ... love .` boots the game on the
+-- ROM-free dataset and renders instead of opening the ROM picker
+-- (tests/engine/data_dir_boot_test.lua pins both halves).
+--
+-- What is still missing is the DATASET, not the plumbing: tests/fixture_data
+-- is 3 species / 2 maps and carries no player sprite, so a driver reaches the
+-- title screen and the start menu but cannot walk an overworld, open a battle
+-- or drive the mod screen.  Capturing the four shots below needs the fixture
+-- set grown to a playable slice first; until then a driver can only satisfy
+-- the first two.
 Shots.FIXTURE_SHOTS = {
   "fixture_title",
   "fixture_start_menu",

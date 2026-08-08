@@ -79,6 +79,17 @@ SpriteRenderer.WALK = WALK
 -- seed: any stable per-instance value (e.g. an NPC's `id`) used to resolve
 -- RED++'s per-instance "random" OBP sentinel (PaletteFX.spriteObp)
 function SpriteRenderer.new(spriteDef, seed)
+  -- A nil def means something referenced a sprite id that data.sprites never
+  -- declares.  Indexing it reports "attempt to index local 'spriteDef'" from
+  -- inside the renderer, which names neither the sprite nor the map that asked
+  -- for it -- the least useful place to find out.  Fail where the cause is
+  -- still legible instead.
+  assert(type(spriteDef) == "table",
+    "SpriteRenderer.new: no sprite definition -- a map, NPC or player pic "
+    .. "references a sprite id that data.sprites does not declare")
+  assert(spriteDef.image,
+    "SpriteRenderer.new: sprite '" .. tostring(spriteDef.id or "?")
+    .. "' declares no image")
   local self = setmetatable({}, SpriteRenderer)
   self.def = spriteDef
   self.seed = seed

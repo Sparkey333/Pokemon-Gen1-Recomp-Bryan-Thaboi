@@ -240,6 +240,15 @@ end
 
 -- Whether a given game version's ROM has already been imported and cached.
 function RomImporter.isReady(version)
+  -- POKEPORT_DATA_DIR replaces the ROM-derived cache outright: Data:load
+  -- reads every module straight out of that directory (src/core/Data.lua
+  -- loadModule), and a dataset authored there carries its own asset paths,
+  -- so there is no ROM to import and nothing for the importer to do.
+  -- Without this branch the check falls through to the cache probe below,
+  -- returns false, and main.lua opens the ROM picker instead of booting --
+  -- which is why no LOVE process could ever be pointed at a ROM-free
+  -- dataset (tests/modkit/shots.lua, scripts/test.sh T5).
+  if os.getenv("POKEPORT_DATA_DIR") then return true end
   version = version or "red"
   local CacheFs = require("src.import.CacheFs")
   if CacheFs.root() then

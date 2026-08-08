@@ -369,7 +369,11 @@ function OverworldState:setMap(mapId, x, y, facing, opts)
   -- Pokemon Centers and the dungeon escape spots, and entering those never
   -- sets a wTownVisitedFlag bit, so it must not set save.visited either (#788)
   local mapDef = Game.data.maps[mapId]
-  if Game.data.field.flyWarps[mapId] and mapDef and Map.isFlyTown(mapDef) then
+  -- `or {}` to match the read at the end of this file: field.flyWarps is not
+  -- seeded by FieldDefaults, so a dataset that never declares fly points (any
+  -- total conversion, and the ROM-free fixture set) reaches here with it nil.
+  local flyWarps = Game.data.field.flyWarps or {}
+  if flyWarps[mapId] and mapDef and Map.isFlyTown(mapDef) then
     Game.save.visited = Game.save.visited or {}
     Game.save.visited[mapId] = true
   end
@@ -1685,7 +1689,7 @@ end
 
 -- Fly to a visited town (called from the party menu).
 function OverworldState:flyTo(mapId)
-  local spot = Game.data.field.flyWarps[mapId]
+  local spot = (Game.data.field.flyWarps or {})[mapId]
   if not spot then return end
   Game.save.onBike = false
   Game.save.forcedBike = nil -- HandleFlyWarpOrDungeonWarp res BIT_ALWAYS_ON_BIKE

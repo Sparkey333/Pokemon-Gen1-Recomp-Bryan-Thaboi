@@ -464,6 +464,27 @@ local function getGbcAtlas(imagePath, tilesetId, mapId, perRow, data)
   return img or nil
 end
 
+-- tilesPerRow is declared OPTIONAL by the mod tileset schema
+-- (src/mods/Schemas.lua: `tilesPerRow = f.opt(f.int(1))`), but every consumer
+-- here used it unguarded, so a schema-valid tileset that omitted it crashed
+-- the quad loop below with "attempt to perform arithmetic on local 'perRow'
+-- (a nil value)" -- an opaque failure a long way from the tileset that caused
+-- it.  The ROM importer always stamps the key (src/import/RomExtractor.lua:210
+-- derives it as imageWidth / 8), which is why a cartridge import never hit
+-- this and an authored dataset always did.
+--
+-- Mirror the extractor's derivation instead of demanding the key: the sheet
+-- itself already carries the answer.
+local function tilesPerRowOf(tileset, image)
+  local declared = tonumber(tileset.tilesPerRow)
+  if declared and declared >= 1 then return math.floor(declared) end
+  if image then
+    local width = image:getDimensions()
+    if width and width >= 8 then return math.floor(width / 8) end
+  end
+  return 1
+end
+
 -- data: Game.data (threaded through explicitly, not required lazily, so
 -- headless tests that build a map from a plain local table still work)
 function TileRenderer.new(map, data)
@@ -471,10 +492,16 @@ function TileRenderer.new(map, data)
   self.map = map
   self.data = data
   self.image = getImage(map.tileset.image)
+  -- Resolved once, off the BASE sheet, before the GBC branch may swap
+  -- self.image for the recolored atlas: the atlas is built to the same row
+  -- stride (it is handed this very value), so one figure serves the atlas
+  -- build, the quad loop and the water border fill alike.
+  local perRow = tilesPerRowOf(map.tileset, self.image)
+  self.tilesPerRow = perRow
   local gbcCtx
   if data and PaletteFX.usesGbcPack() and PaletteFX.hasWorldTileset(map.tileset.id) then
     local gbc = getGbcAtlas(map.tileset.image, map.tileset.id, map.id,
-                            map.tileset.tilesPerRow, data)
+                            perRow, data)
     if gbc then
       self.image = gbc
       self.gbcAtlas = true
@@ -486,7 +513,7 @@ function TileRenderer.new(map, data)
       -- (see getKeyedTile): same source image and palette groups, so keep the
       -- context rather than re-deriving it per draw.
       gbcCtx.imagePath = map.tileset.image
-      gbcCtx.perRow = map.tileset.tilesPerRow
+      gbcCtx.perRow = perRow
       self.gbcCtx = gbcCtx
       self.gbcAtlasKey = map.tileset.image .. gbcCtx.key
       self.gbcKeyed = {}
@@ -498,7 +525,6 @@ function TileRenderer.new(map, data)
 
   local iw, ih = self.image:getDimensions()
   self.quads = {}
-  local perRow = map.tileset.tilesPerRow
   for t = 0, (iw / 8) * (ih / 8) - 1 do
     self.quads[t] = love.graphics.newQuad((t % perRow) * 8,
                                           math.floor(t / perRow) * 8, 8, 8, iw, ih)
@@ -583,7 +609,7 @@ end
 local function ensureWaterBorderFill(self)
   if self.borderWaterTextures then return true end
   local map = self.map
-  local perRow = map.tileset.tilesPerRow
+  local perRow = self.tilesPerRow or tilesPerRowOf(map.tileset, self.image)
   local colors, gbcKey
   if self.gbcAtlas and self.data then
     local group = PaletteFX.worldGroupAt(map.tileset.id, map.id, WATER_TILE)
